@@ -1,40 +1,35 @@
 import sys
-import re
 
 
-def can_transform(test_case):
-    binary, ab_seq = test_case.split(' ')
-    pattern = []
-    zeroes_count = 0
-    ones_count = 0
+def can_transform(binary, ab_seq):
+    bin_len = len(binary)
+    ab_len = len(ab_seq)
 
-    for digit in binary:
-        if digit == '0':
-            if ones_count > 0:
-                pattern.append("(?:A{%d,}|B{%d,})" % (ones_count, ones_count))
-                ones_count = 0
-            zeroes_count += 1
-        else:
-            if zeroes_count > 0:
-                pattern.append("(?:A{%d,})" % zeroes_count)
-                zeroes_count = 0
-            ones_count += 1
+    state = [[False for _ in xrange(ab_len + 1)] for _ in xrange(bin_len + 1)]
+    for i in xrange(bin_len + 1):
+        state[i][0] = True
+    for i in xrange(ab_len + 1):
+        state[0][i] = True
 
-    if zeroes_count > 0:
-        pattern.append("(?:A{%d,})" % zeroes_count)
-    if ones_count > 0:
-        pattern.append("(?:A{%d,}|B{%d,})" % (ones_count, ones_count))
+    for i in xrange(1, bin_len + 1):
+        for j in xrange(1, ab_len + 1):
+            p = binary[i - 1]
+            t = ab_seq[j - 1]
+            if state[i - 1][j - 1]:
+                state[i][j] = (p == '0' and t == 'A') or p == '1'
+            else:
+                state[i][j] = state[i - 1][j] and t == ab_seq[j - 2]
 
-    return re.match(''.join(pattern), ab_seq)
+    return state[bin_len][ab_len]
 
 
 if __name__ == '__main__':
-    test_cases = open(sys.argv[1], 'r')
-    for test in test_cases:
-        test = test.rstrip()
-        if test:
-            if can_transform(test):
-                print('Yes')
-            else:
-                print('No')
-    test_cases.close()
+    with open(sys.argv[1], 'r') as test_cases:
+        for test in test_cases:
+            test = test.rstrip()
+            if test:
+                binary, ab_seq = test.split(' ')
+                if can_transform(binary, ab_seq):
+                    print('Yes')
+                else:
+                    print('No')
