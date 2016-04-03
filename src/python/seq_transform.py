@@ -17,8 +17,10 @@ def can_transform(binary, ab_seq):
             t = ab_seq[j - 1]
             if state[i - 1][j - 1]:
                 state[i][j] = (p == '0' and t == 'A') or p == '1'
+                if j >= 2:
+                    state[i][j] = state[i][j] and (t == ab_seq[j - 2])
             else:
-                state[i][j] = state[i - 1][j] and t == ab_seq[j - 2]
+                state[i][j] = state[i - 1][j] and (t == ab_seq[j - 2])
 
     return state[bin_len][ab_len]
 
